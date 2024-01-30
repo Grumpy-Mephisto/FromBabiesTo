@@ -6,5 +6,11 @@ public class MainFrame extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.add(new AnimationPanel());
         this.setVisible(true);
+        this.setResizable(false);
+        this.setLocationRelativeTo(null);
+        this.setTitle("From Babies to ... | By 65050437");
+
+        System.setProperty("awt.useSystemAAFontSettings", "on");
+        System.setProperty("swing.aatext", "true");
     }
 }
