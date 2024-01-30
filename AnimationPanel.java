@@ -5,34 +5,44 @@ import java.awt.Color;
 
 public class AnimationPanel extends JPanel {
     private Timer timer;
-    private int ballRadius = 50; // Radius of the ball
-    private int ballX, ballY; // Ball position
-    private int xVelocity = 5; // Horizontal velocity
-    private int yVelocity = 5; // Vertical velocity
-    private Color ballColor = Color.PINK; // Ball color
+    private int slimeSize = 30; // Starting size of the slime
+    private int slimeX, slimeY; // Slime position
+    private int xVelocity = 4; // Horizontal velocity
+    private int yVelocity = 4; // Vertical velocity
+    private final int maxSize = 120; // Maximum size the slime will grow to
+    private final Color slimeColor = new Color(50, 205, 50); // Color of the slime
 
     public AnimationPanel() {
-        // Set initial position of the ball to be at the center
-        ballX = (getWidth() - ballRadius) / 2;
-        ballY = (getHeight() - ballRadius) / 2;
+        // Initialize the slime at the center of the panel
+        slimeX = 150;
+        slimeY = 150;
 
         timer = new Timer(40, e -> {
-            updateBall();
+            updateSlime();
             repaint();
         });
         timer.start();
     }
 
-    private void updateBall() {
-        // Update the ball's position
-        ballX += xVelocity;
-        ballY += yVelocity;
+    private void updateSlime() {
+        // Update the slime's position
+        slimeX += xVelocity;
+        slimeY += yVelocity;
+
+        // Gradually change the slime's size to represent growth
+        if (slimeSize < maxSize) {
+            slimeSize++;
+        }
 
         // Check for collisions with the panel's borders
-        if (ballX < 0 || ballX > getWidth() - ballRadius * 2) {
+        checkCollision();
+    }
+
+    private void checkCollision() {
+        if (slimeX < 0 || slimeX > getWidth() - slimeSize) {
             xVelocity *= -1; // Reverse horizontal direction
         }
-        if (ballY < 0 || ballY > getHeight() - ballRadius * 2) {
+        if (slimeY < 0 || slimeY > getHeight() - slimeSize) {
             yVelocity *= -1; // Reverse vertical direction
         }
     }
@@ -40,36 +50,11 @@ public class AnimationPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(ballColor);
-        // Draw the ball using the Midpoint Circle algorithm
-        MidpointCircle(g, ballX + ballRadius, ballY + ballRadius, ballRadius);
+        drawSlime(g, slimeX, slimeY, slimeSize);
     }
 
-    private void MidpointCircle(Graphics g, int centerX, int centerY, int radius) {
-        int x = radius;
-        int y = 0;
-        int p = 1 - radius;
-
-        while (x >= y) {
-            plotPoints(g, centerX, centerY, x, y);
-            y++;
-            if (p <= 0) {
-                p = p + 2 * y + 1;
-            } else {
-                x--;
-                p = p + 2 * y - 2 * x + 1;
-            }
-        }
-    }
-
-    private void plotPoints(Graphics g, int cx, int cy, int x, int y) {
-        g.drawLine(cx + x, cy + y, cx + x, cy + y);
-        g.drawLine(cx - x, cy + y, cx - x, cy + y);
-        g.drawLine(cx + x, cy - y, cx + x, cy - y);
-        g.drawLine(cx - x, cy - y, cx - x, cy - y);
-        g.drawLine(cx + y, cy + x, cx + y, cy + x);
-        g.drawLine(cx - y, cy + x, cx - y, cy + x);
-        g.drawLine(cx + y, cy - x, cx + y, cy - x);
-        g.drawLine(cx - y, cy - x, cx - y, cy - x);
+    private void drawSlime(Graphics g, int x, int y, int size) {
+        g.setColor(slimeColor);
+        g.fillRect(x, y, size, size); // Drawing a filled square for the slime
     }
 }
