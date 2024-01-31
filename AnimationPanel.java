@@ -50,7 +50,10 @@ public class AnimationPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        drawSlime(g, slimeX, slimeY, slimeRadius);
+        Graphics2D g2d = (Graphics2D) (g);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        drawSlime(g2d, slimeX, slimeY, slimeRadius);
     }
 
     private void midpointCircle(Graphics g, int centerX, int centerY, int radius) {
@@ -114,8 +117,8 @@ public class AnimationPanel extends JPanel {
 
         QuadCurve2D curve = new QuadCurve2D.Float();
         curve.setCurve(x1, y1, x2, y2, x3, y3);
-        Graphics2D g2 = (Graphics2D) g;
-        g2.draw(curve);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.draw(curve);
     }
 
     private void drawSlime(Graphics g, int x, int y, int radius) {
