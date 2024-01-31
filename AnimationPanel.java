@@ -121,7 +121,23 @@ public class AnimationPanel extends JPanel {
         g2d.draw(curve);
     }
 
+    private void floodFill(Graphics g, int x, int y, Color targetColor, Color replacementColor) {
+        if (targetColor == replacementColor) {
+            return;
+        }
+        if (g.getColor() != targetColor) {
+            return;
+        }
+        g.setColor(replacementColor);
+        g.fillRect(x, y, 1, 1);
+        floodFill(g, x - 1, y, targetColor, replacementColor);
+        floodFill(g, x + 1, y, targetColor, replacementColor);
+        floodFill(g, x, y - 1, targetColor, replacementColor);
+        floodFill(g, x, y + 1, targetColor, replacementColor);
+    }
+
     private void drawSlime(Graphics g, int x, int y, int radius) {
+        floodFill(g, x, y, getBackground(), slimeColor);
         midpointCircle(g, x, y, radius);
         bresenhamLine(g, x - radius, y, x + radius, y);
         bezierCurve(g, x - radius, y, x, y + radius, x + radius, y);
