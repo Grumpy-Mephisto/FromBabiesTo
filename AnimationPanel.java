@@ -1,17 +1,18 @@
+// AnimationPanel.java
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.QuadCurve2D;
+import java.awt.geom.Ellipse2D;
 
 public class AnimationPanel extends JPanel {
     private Timer timer;
-    private int slimeRadius = 15; // Starting radius of the slime
-    private int slimeX, slimeY; // Slime center position
-    private int xVelocity = 4; // Horizontal velocity
-    private int yVelocity = 4; // Vertical velocity
-    private final int maxRadius = 60; // Maximum radius the slime will grow to
-    private final Color slimeColor = new Color(50, 205, 50); // Color of the slime
+    private int slimeRadius = 15;
+    private int slimeX, slimeY;
+    private int xVelocity = 4;
+    private int yVelocity = 4;
+    private final int maxRadius = 60;
+    private final Color slimeColor = new Color(50, 205, 50, 180); // Semi-transparent
 
     public AnimationPanel() {
         slimeX = 150;
@@ -40,106 +41,87 @@ public class AnimationPanel extends JPanel {
 
     private void checkCollision() {
         if (slimeX - slimeRadius < 0 || slimeX + slimeRadius > getWidth()) {
-            xVelocity *= -1; // Reverse horizontal direction
+            xVelocity *= -1;
+            slimeRadius -= 5;
         }
         if (slimeY - slimeRadius < 0 || slimeY + slimeRadius > getHeight()) {
-            yVelocity *= -1; // Reverse vertical direction
+            yVelocity *= -1;
+            slimeRadius -= 5;
         }
+        slimeRadius = Math.max(15, slimeRadius);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) (g);
+        Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         drawSlime(g2d, slimeX, slimeY, slimeRadius);
     }
 
-    private void midpointCircle(Graphics g, int centerX, int centerY, int radius) {
-        g.setColor(slimeColor);
+    private void drawSlime(Graphics2D g2d, int x, int y, int radius) {
+        int ellipseWidth = radius;
+        int ellipseHeight = (int) (radius * 0.7);
 
-        int x = 0;
-        int y = radius;
-        int d = 1 - radius;
-        int deltaE = 3;
-        int deltaSE = -2 * radius + 5;
+        midpointEllipse(g2d, x, y, ellipseWidth, ellipseHeight);
 
-        while (y > x) {
-            if (d < 0) {
-                d += deltaE;
-                deltaE += 2;
-                deltaSE += 2;
+        GradientPaint gradient = new GradientPaint(x, y - ellipseHeight, slimeColor.darker(), x,
+                y + ellipseHeight, slimeColor.brighter());
+        g2d.setPaint(gradient);
+        g2d.fill(new Ellipse2D.Double(x - ellipseWidth, y - ellipseHeight, 2 * ellipseWidth,
+                2 * ellipseHeight));
+    }
+
+    private void midpointEllipse(Graphics2D g2d, int x, int y, int width, int height) {
+        int rxSq = width * width;
+        int rySq = height * height;
+        int xe, ye, d1, d2, dx, dy;
+
+        xe = 0;
+        ye = height;
+        d1 = (int) (rySq - (rxSq * height) + (0.25 * rxSq));
+        dx = 2 * rySq * xe;
+        dy = 2 * rxSq * ye;
+
+        while (dx < dy) {
+            plotEllipsePoints(g2d, x, y, xe, ye);
+            if (d1 < 0) {
+                xe++;
+                dx += 2 * rySq;
+                d1 += dx + rySq;
             } else {
-                d += deltaSE;
-                deltaE += 2;
-                deltaSE += 4;
-                y--;
+                xe++;
+                ye--;
+                dx += 2 * rySq;
+                dy -= 2 * rxSq;
+                d1 += dx - dy + rySq;
             }
-            x++;
-            g.fillRect(centerX + x, centerY + y, 1, 1);
-            g.fillRect(centerX + x, centerY - y, 1, 1);
-            g.fillRect(centerX - x, centerY + y, 1, 1);
-            g.fillRect(centerX - x, centerY - y, 1, 1);
-            g.fillRect(centerX + y, centerY + x, 1, 1);
-            g.fillRect(centerX + y, centerY - x, 1, 1);
-            g.fillRect(centerX - y, centerY + x, 1, 1);
-            g.fillRect(centerX - y, centerY - x, 1, 1);
         }
-    }
 
-    private void bresenhamLine(Graphics g, int x1, int y1, int x2, int y2) {
-        g.setColor(slimeColor);
+        d2 = (int) ((rySq * ((xe + 0.5) * (xe + 0.5))) + (rxSq * ((ye - 1) * (ye - 1)))
+                - (rxSq * rySq));
 
-        int dx = x2 - x1;
-        int dy = y2 - y1;
-        int d = 2 * dy - dx;
-        int deltaE = 2 * dy;
-        int deltaNE = 2 * (dy - dx);
-        int x = x1;
-        int y = y1;
-
-        while (x < x2) {
-            if (d <= 0) {
-                d += deltaE;
-                x++;
+        while (ye >= 0) {
+            plotEllipsePoints(g2d, x, y, xe, ye);
+            if (d2 > 0) {
+                ye--;
+                dy -= 2 * rxSq;
+                d2 += rxSq - dy;
             } else {
-                d += deltaNE;
-                x++;
-                y++;
+                ye--;
+                xe++;
+                dx += 2 * rySq;
+                dy -= 2 * rxSq;
+                d2 += dx - dy + rxSq;
             }
-            g.fillRect(x, y, 1, 1);
         }
     }
 
-    private void bezierCurve(Graphics g, int x1, int y1, int x2, int y2, int x3, int y3) {
-        g.setColor(slimeColor);
-
-        QuadCurve2D curve = new QuadCurve2D.Float();
-        curve.setCurve(x1, y1, x2, y2, x3, y3);
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.draw(curve);
-    }
-
-    private void floodFill(Graphics g, int x, int y, Color targetColor, Color replacementColor) {
-        if (targetColor == replacementColor) {
-            return;
-        }
-        if (g.getColor() != targetColor) {
-            return;
-        }
-        g.setColor(replacementColor);
-        g.fillRect(x, y, 1, 1);
-        floodFill(g, x - 1, y, targetColor, replacementColor);
-        floodFill(g, x + 1, y, targetColor, replacementColor);
-        floodFill(g, x, y - 1, targetColor, replacementColor);
-        floodFill(g, x, y + 1, targetColor, replacementColor);
-    }
-
-    private void drawSlime(Graphics g, int x, int y, int radius) {
-        floodFill(g, x, y, getBackground(), slimeColor);
-        midpointCircle(g, x, y, radius);
-        bresenhamLine(g, x - radius, y, x + radius, y);
-        bezierCurve(g, x - radius, y, x, y + radius, x + radius, y);
+    private void plotEllipsePoints(Graphics2D g2d, int cx, int cy, int x, int y) {
+        g2d.fillRect(cx + x, cy + y, 1, 1);
+        g2d.fillRect(cx - x, cy + y, 1, 1);
+        g2d.fillRect(cx + x, cy - y, 1, 1);
+        g2d.fillRect(cx - x, cy - y, 1, 1);
     }
 }
