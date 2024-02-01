@@ -6,7 +6,7 @@ JAVA=$(shell which java)
 
 JFLAGS=-g
 
-SOURCES=MainFrame.java AnimationPanel.java Main.java
+SOURCES=$(wildcard *.java)
 
 CLASSES=$(SOURCES:.java=.class)
 
