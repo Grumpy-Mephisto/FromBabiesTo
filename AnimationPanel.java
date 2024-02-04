@@ -1,8 +1,8 @@
 import java.awt.*;
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
@@ -194,6 +194,9 @@ public class AnimationPanel extends JPanel {
         // Draw Continents
         drawContinents(g2d, centerX, centerY, earthRadius);
 
+        // Draw Atmosphere
+        drawAtmosphere(g2d, centerX, centerY, earthRadius);
+
         // Reset the transform for clouds so that they don't rotate with the Earth
         g2d.setTransform(oldTransform);
 
@@ -273,6 +276,15 @@ public class AnimationPanel extends JPanel {
         g2d.fill(continent6);
     }
 
+    private void drawAtmosphere(Graphics2D g2d, int centerX, int centerY, int earthRadius) {
+        float[] dist = {0.7f, 1.0f};
+        Color[] colors = {new Color(255, 255, 255, 64), new Color(255, 255, 255, 0)};
+        RadialGradientPaint p = new RadialGradientPaint(new Point2D.Float(centerX, centerY),
+                earthRadius * 1.1f, dist, colors);
+        g2d.setPaint(p);
+        g2d.fillOval(centerX - earthRadius, centerY - earthRadius, earthRadius * 2,
+                earthRadius * 2);
+    }
 
     private void drawClouds(Graphics2D g2d, int centerX, int centerY, int earthRadius) {
         g2d.setColor(Colors.CLOUD_WHITE);
