@@ -1,5 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
@@ -22,8 +23,10 @@ public class AnimationPanel extends JPanel {
     private List<Point> clouds; // List of cloud positions
     private double earthRotationAngle = 0; // Earth rotation angle
 
+    // Earth
     private int characterSpeed = 1;
 
+    // Sun
     private double sunPulseAngle = 0; // Sun pulsation angle
 
     public AnimationPanel() {
@@ -52,23 +55,11 @@ public class AnimationPanel extends JPanel {
     }
 
     private void initializeClouds() {
-        clouds = new java.util.ArrayList<>();
-        for (int i = 0; i < 5; i++) { // Create 5 cloud positions
+        clouds = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
             clouds.add(new Point((int) (Math.random() * CANVAS_WIDTH),
                     (int) (Math.random() * CANVAS_HEIGHT)));
         }
-    }
-
-    private void updateCharacter() {
-        characterAge = (characterAge + 1) % MAX_AGE;
-
-        updatePosition();
-        updateClouds(); // Update clouds for animation
-        earthRotationAngle += 0.5; // Increment the Earth's rotation angle
-
-        clearBuffer();
-
-        drawScene();
     }
 
     private void clearBuffer() {
@@ -80,6 +71,17 @@ public class AnimationPanel extends JPanel {
     private void drawScene() {
         drawBackground(bufferGraphics);
         drawCharacter(bufferGraphics);
+    }
+
+    private void updateCharacter() {
+        characterAge = (characterAge + 1) % MAX_AGE;
+
+        updatePosition();
+        earthRotationAngle += 0.5; // Increment the Earth's rotation angle
+
+        clearBuffer();
+
+        drawScene();
     }
 
     private void updatePosition() {
@@ -100,17 +102,7 @@ public class AnimationPanel extends JPanel {
         }
     }
 
-    private void updateClouds() {
-        for (Point cloud : clouds) {
-            cloud.x += characterVelocity.x;
-            cloud.y += characterVelocity.y;
 
-            if (cloud.x > CANVAS_WIDTH)
-                cloud.x = -50;
-            if (cloud.y > CANVAS_HEIGHT)
-                cloud.y = -50;
-        }
-    }
 
     @Override
     protected void paintComponent(Graphics g) {
