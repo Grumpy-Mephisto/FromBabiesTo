@@ -237,8 +237,15 @@ public class AnimationPanel extends JPanel {
         // Reset the transform for other drawings
         g2d.setTransform(oldTransform);
 
+        // Set clipping area for the clouds
+        g2d.setClip(new Ellipse2D.Double(centerX - earthRadius, centerY - earthRadius,
+                earthRadius * 2, earthRadius * 2));
+
         // Draw Clouds
         drawClouds(g2d, centerX, centerY, earthRadius);
+
+        // Reset the clipping area
+        g2d.setClip(null);
     }
 
     private void applyShadow(Graphics2D g2d, int earthRadius, double lightAngle) {
