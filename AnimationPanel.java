@@ -1,8 +1,10 @@
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 import javax.swing.*;
 import java.util.List;
+import java.awt.geom.Path2D;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+import java.awt.geom.AffineTransform;
 
 public class AnimationPanel extends JPanel {
     private static final int CANVAS_WIDTH = 600;
@@ -142,6 +144,11 @@ public class AnimationPanel extends JPanel {
         g2d.setColor(Colors.OCEAN_BLUE);
         drawMidpointCircle(g2d, centerX, centerY, earthRadius, true);
 
+        // Set clipping area for the continents
+        Shape clip = g2d.getClip(); // Save the current clipping area
+        g2d.setClip(new Ellipse2D.Double(centerX - earthRadius, centerY - earthRadius,
+                earthRadius * 2, earthRadius * 2));
+
         // Rotate the Earth
         AffineTransform oldTransform = g2d.getTransform();
         g2d.rotate(Math.toRadians(earthRotationAngle), centerX, centerY);
@@ -150,22 +157,102 @@ public class AnimationPanel extends JPanel {
         g2d.setColor(Colors.FOREST_GREEN);
         drawContinents(g2d, centerX, centerY, earthRadius);
 
-        // Reset the transform for other drawings
+        // Reset the transform for clouds so that they don't rotate with the Earth
         g2d.setTransform(oldTransform);
 
         // Draw Clouds
         g2d.setColor(Colors.CLOUD_WHITE);
         drawClouds(g2d, centerX, centerY, earthRadius);
+
+        // Restore original settings
+        g2d.setTransform(oldTransform);
+        g2d.setClip(clip);
     }
 
-    private void drawContinents(Graphics2D g2d, int centerX, int centerY, int earthRadius) {}
+    private void drawContinents(Graphics2D g2d, int centerX, int centerY, int earthRadius) {
+        double scale = earthRadius / 40.0;
 
-    private void drawClouds(Graphics2D g2d, int centerX, int centerY, int earthRadius) {}
+        // North America
+        Path2D.Double continent1 = new Path2D.Double();
+        continent1.moveTo(centerX - 15 * scale, centerY - 5 * scale);
+        continent1.curveTo(centerX - 20 * scale, centerY - 30 * scale, centerX - 5 * scale,
+                centerY - 20 * scale, centerX - 10 * scale, centerY - 5 * scale);
+        continent1.closePath();
+        g2d.fill(continent1);
+
+        // Africa
+        Path2D.Double continent2 = new Path2D.Double();
+        continent2.moveTo(centerX, centerY);
+        continent2.curveTo(centerX + 10 * scale, centerY - 10 * scale, centerX + 5 * scale,
+                centerY - 30 * scale, centerX, centerY - 15 * scale);
+        continent2.closePath();
+        g2d.fill(continent2);
+
+        // Europe
+        Path2D.Double continent3 = new Path2D.Double();
+        continent3.moveTo(centerX + 5 * scale, centerY - 10 * scale);
+        continent3.curveTo(centerX + 20 * scale, centerY - 15 * scale, centerX + 15 * scale,
+                centerY, centerX + 5 * scale, centerY - 5 * scale);
+        continent3.closePath();
+        g2d.fill(continent3);
+
+        // South America
+        Path2D.Double continent4 = new Path2D.Double();
+        continent4.moveTo(centerX - 15 * scale, centerY + 5 * scale);
+        continent4.curveTo(centerX - 20 * scale, centerY + 30 * scale, centerX - 5 * scale,
+                centerY + 20 * scale, centerX - 10 * scale, centerY + 5 * scale);
+        continent4.closePath();
+        g2d.fill(continent4);
+
+        // Asia
+        Path2D.Double continent5 = new Path2D.Double();
+        continent5.moveTo(centerX + 10 * scale, centerY - 5 * scale);
+        continent5.curveTo(centerX + 30 * scale, centerY - 10 * scale, centerX + 20 * scale,
+                centerY - 30 * scale, centerX + 10 * scale, centerY - 15 * scale);
+        continent5.closePath();
+        g2d.fill(continent5);
+
+        // Australia
+        Path2D.Double continent6 = new Path2D.Double();
+        continent6.moveTo(centerX + 10 * scale, centerY + 5 * scale);
+        continent6.curveTo(centerX + 30 * scale, centerY + 10 * scale, centerX + 20 * scale,
+                centerY + 30 * scale, centerX + 10 * scale, centerY + 15 * scale);
+        continent6.closePath();
+        g2d.fill(continent6);
+    }
+
+
+    private void drawClouds(Graphics2D g2d, int centerX, int centerY, int earthRadius) {
+        int maxClouds = 6; // Adjust the number of clouds
+        for (int i = 0; i < maxClouds; i++) {
+            int cloudSize = earthRadius / 4 + (int) (Math.random() * (earthRadius / 4));
+            int x = centerX - cloudSize + (int) (Math.random() * earthRadius) - earthRadius / 2;
+            int y = centerY - cloudSize + (int) (Math.random() * earthRadius) - earthRadius / 2;
+
+            Path2D.Double cloud = new Path2D.Double();
+            cloud.moveTo(x, y);
+            int numFluffs = 3 + (int) (Math.random() * 3) + 1; // 3 to 6 fluffs
+            for (int j = 0; j < numFluffs; j++) {
+                x += cloudSize / numFluffs;
+                double angle1 = Math.random() * Math.PI / 2;
+                double angle2 = Math.random() * Math.PI / 2;
+                cloud.curveTo(x + cloudSize * Math.cos(angle1), y - cloudSize * Math.sin(angle1),
+                        x + cloudSize * Math.cos(angle2), y + cloudSize * Math.sin(angle2), x, y);
+            }
+            cloud.closePath();
+
+            float opacity = 0.5f + (float) Math.random() * 0.3f; // Semi-transparent
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+            g2d.fill(cloud);
+        }
+
+        // Reset alpha composite to fully opaque
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+    }
 
     private void drawStar(Graphics2D g2d, int x, int y, int radius) {
         int xCenter = x - radius;
         int yCenter = y - radius;
-        int diameter = 2 * radius;
 
         for (int i = 0; i < 8; i++) {
             int x1 = xCenter + (int) (radius * Math.cos(i * Math.PI / 4));
