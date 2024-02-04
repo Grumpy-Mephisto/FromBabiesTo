@@ -14,6 +14,8 @@ public class Colors {
     // White for clouds and polar ice caps
     public static final Color CLOUD_WHITE = Color.decode("#FDFDFD");
 
-    // Dark blue for the space or shadowed areas of the Earth
-    public static final Color SPACE_DARK_BLUE = Color.decode("#030637");
+    // Sunlight
+    public static final Color SUN_YELLOW = Color.decode("#FFD700");
+    public static final Color SUN_ORANGE = Color.decode("#FFA500");
+    public static final Color SUN_RED = Color.decode("#FF4500");
 }

@@ -156,7 +156,21 @@ public class AnimationPanel extends JPanel {
     }
 
     private void drawCharacter(Graphics2D g2d) {
+        drawSun(g2d);
         drawEarth(g2d);
+    }
+
+    private void drawSun(Graphics2D g2d) {
+        int centerX = CANVAS_WIDTH / 2;
+        int centerY = CANVAS_HEIGHT / 2;
+        int sunRadius = 50;
+
+        // Gradient
+        RadialGradientPaint sunGradient =
+                new RadialGradientPaint(centerX, centerY, sunRadius, new float[] {0.0f, 0.5f, 1.0f},
+                        new Color[] {Colors.SUN_YELLOW, Colors.SUN_ORANGE, Colors.SUN_RED});
+        g2d.setPaint(sunGradient);
+        g2d.fillOval(centerX - sunRadius, centerY - sunRadius, sunRadius * 2, sunRadius * 2);
     }
 
     private void drawEarth(Graphics2D g2d) {
@@ -178,14 +192,12 @@ public class AnimationPanel extends JPanel {
         g2d.rotate(Math.toRadians(earthRotationAngle), centerX, centerY);
 
         // Draw Continents
-        g2d.setColor(Colors.FOREST_GREEN);
         drawContinents(g2d, centerX, centerY, earthRadius);
 
         // Reset the transform for clouds so that they don't rotate with the Earth
         g2d.setTransform(oldTransform);
 
         // Draw Clouds
-        g2d.setColor(Colors.CLOUD_WHITE);
         drawClouds(g2d, centerX, centerY, earthRadius);
 
         // Restore original settings
@@ -197,6 +209,8 @@ public class AnimationPanel extends JPanel {
         double scale = earthRadius / 40.0;
 
         // North America
+        g2d.setColor(Colors.FOREST_GREEN);
+
         Path2D.Double continent1 = new Path2D.Double();
         continent1.moveTo(centerX - 15 * scale, centerY - 5 * scale);
         continent1.curveTo(centerX - 20 * scale, centerY - 30 * scale, centerX - 5 * scale,
@@ -205,6 +219,8 @@ public class AnimationPanel extends JPanel {
         g2d.fill(continent1);
 
         // Africa
+        g2d.setColor(Colors.DESERT_BROWN);
+
         Path2D.Double continent2 = new Path2D.Double();
         continent2.moveTo(centerX, centerY);
         continent2.curveTo(centerX + 10 * scale, centerY - 10 * scale, centerX + 5 * scale,
@@ -213,6 +229,8 @@ public class AnimationPanel extends JPanel {
         g2d.fill(continent2);
 
         // Europe
+        g2d.setColor(Colors.MOUNTAIN_GRAY);
+
         Path2D.Double continent3 = new Path2D.Double();
         continent3.moveTo(centerX + 5 * scale, centerY - 10 * scale);
         continent3.curveTo(centerX + 20 * scale, centerY - 15 * scale, centerX + 15 * scale,
@@ -221,6 +239,8 @@ public class AnimationPanel extends JPanel {
         g2d.fill(continent3);
 
         // South America
+        g2d.setColor(Colors.FOREST_GREEN);
+
         Path2D.Double continent4 = new Path2D.Double();
         continent4.moveTo(centerX - 15 * scale, centerY + 5 * scale);
         continent4.curveTo(centerX - 20 * scale, centerY + 30 * scale, centerX - 5 * scale,
@@ -229,6 +249,8 @@ public class AnimationPanel extends JPanel {
         g2d.fill(continent4);
 
         // Asia
+        g2d.setColor(Colors.MOUNTAIN_GRAY);
+
         Path2D.Double continent5 = new Path2D.Double();
         continent5.moveTo(centerX + 10 * scale, centerY - 5 * scale);
         continent5.curveTo(centerX + 30 * scale, centerY - 10 * scale, centerX + 20 * scale,
@@ -237,6 +259,8 @@ public class AnimationPanel extends JPanel {
         g2d.fill(continent5);
 
         // Australia
+        g2d.setColor(Colors.DESERT_BROWN);
+
         Path2D.Double continent6 = new Path2D.Double();
         continent6.moveTo(centerX + 10 * scale, centerY + 5 * scale);
         continent6.curveTo(centerX + 30 * scale, centerY + 10 * scale, centerX + 20 * scale,
@@ -247,6 +271,8 @@ public class AnimationPanel extends JPanel {
 
 
     private void drawClouds(Graphics2D g2d, int centerX, int centerY, int earthRadius) {
+        g2d.setColor(Colors.CLOUD_WHITE);
+
         int maxClouds = 6; // Adjust the number of clouds
         for (int i = 0; i < maxClouds; i++) {
             int cloudSize = earthRadius / 4 + (int) (Math.random() * (earthRadius / 4));
