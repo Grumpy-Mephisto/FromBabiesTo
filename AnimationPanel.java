@@ -19,7 +19,7 @@ public class AnimationPanel extends JPanel {
     private List<Point> clouds; // List of cloud positions
     private double earthRotationAngle = 0; // Earth rotation angle
 
-    private int Speed = 1; // Speed of the character
+    private int characterSpeed = 1;
 
     public AnimationPanel() {
         initializeCanvas();
@@ -35,7 +35,7 @@ public class AnimationPanel extends JPanel {
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
         characterPosition = new Point(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); // Start in the center
-        characterVelocity = new Point(Speed, Speed); // Initial velocity
+        characterVelocity = new Point(characterSpeed, characterSpeed); // Initial velocity
     }
 
     private void initializeTimer() {
@@ -113,6 +113,20 @@ public class AnimationPanel extends JPanel {
                 CANVAS_HEIGHT, new Color(10, 20, 40));
         g2d.setPaint(spaceGradient);
         g2d.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        // Draw stars
+        GradientPaint starGradient =
+                new GradientPaint(0, 0, Color.WHITE, CANVAS_WIDTH, 0, new Color(5, 5, 5));
+        g2d.setPaint(starGradient);
+        for (int i = 0; i < 100; i++) {
+            int x = (int) (Math.random() * CANVAS_WIDTH);
+            int y = (int) (Math.random() * CANVAS_HEIGHT);
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            drawStar(g2d, x, y, 1);
+
+            // Reset the composite
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+        }
     }
 
     private void drawCharacter(Graphics2D g2d) {
@@ -147,6 +161,20 @@ public class AnimationPanel extends JPanel {
     private void drawContinents(Graphics2D g2d, int centerX, int centerY, int earthRadius) {}
 
     private void drawClouds(Graphics2D g2d, int centerX, int centerY, int earthRadius) {}
+
+    private void drawStar(Graphics2D g2d, int x, int y, int radius) {
+        int xCenter = x - radius;
+        int yCenter = y - radius;
+        int diameter = 2 * radius;
+
+        for (int i = 0; i < 8; i++) {
+            int x1 = xCenter + (int) (radius * Math.cos(i * Math.PI / 4));
+            int y1 = yCenter + (int) (radius * Math.sin(i * Math.PI / 4));
+            int x2 = xCenter + (int) (radius * Math.cos((i + 1) * Math.PI / 4));
+            int y2 = yCenter + (int) (radius * Math.sin((i + 1) * Math.PI / 4));
+            g2d.drawLine(x1, y1, x2, y2);
+        }
+    }
 
     /**
      * Draws a circle using the midpoint circle algorithm. This method plots eight octants
