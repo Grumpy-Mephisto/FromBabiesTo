@@ -1,5 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.awt.geom.Path2D;
 import java.awt.geom.Ellipse2D;
@@ -63,10 +64,18 @@ public class AnimationPanel extends JPanel {
         updateClouds(); // Update clouds for animation
         earthRotationAngle += 0.5; // Increment the Earth's rotation angle
 
+        clearBuffer();
+
+        drawScene();
+    }
+
+    private void clearBuffer() {
         bufferGraphics.setComposite(AlphaComposite.Clear);
         bufferGraphics.fillRect(0, 0, buffer.getWidth(), buffer.getHeight());
         bufferGraphics.setComposite(AlphaComposite.SrcOver);
+    }
 
+    private void drawScene() {
         drawBackground(bufferGraphics);
         drawCharacter(bufferGraphics);
     }
@@ -111,24 +120,39 @@ public class AnimationPanel extends JPanel {
     }
 
     private void drawBackground(Graphics2D g2d) {
+        fillSpaceBackground(g2d);
+        drawStars(g2d);
+    }
+
+    private void fillSpaceBackground(Graphics2D g2d) {
         GradientPaint spaceGradient = new GradientPaint(0, 0, new Color(5, 10, 20), CANVAS_WIDTH,
                 CANVAS_HEIGHT, new Color(10, 20, 40));
         g2d.setPaint(spaceGradient);
         g2d.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
 
-        // Draw stars
-        GradientPaint starGradient =
-                new GradientPaint(0, 0, Color.WHITE, CANVAS_WIDTH, 0, new Color(5, 5, 5));
-        g2d.setPaint(starGradient);
+    private void drawStars(Graphics2D g2d) {
+        g2d.setColor(Color.WHITE);
         for (int i = 0; i < 100; i++) {
-            int x = (int) (Math.random() * CANVAS_WIDTH);
-            int y = (int) (Math.random() * CANVAS_HEIGHT);
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-            drawStar(g2d, x, y, 1);
+            float alpha = 0.1f + (float) Math.random() * 0.1f; // Semi-transparent
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
 
-            // Reset the composite
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            int xCenter = (int) (Math.random() * CANVAS_WIDTH);
+            int yCenter = (int) (Math.random() * CANVAS_HEIGHT);
+
+            int radius = 1;
+
+            for (int j = 0; j < 8; j++) {
+                int x1 = xCenter + (int) (radius * Math.cos(j * Math.PI / 4));
+                int y1 = yCenter + (int) (radius * Math.sin(j * Math.PI / 4));
+                int x2 = xCenter + (int) (radius * Math.cos((j + 1) * Math.PI / 4));
+                int y2 = yCenter + (int) (radius * Math.sin((j + 1) * Math.PI / 4));
+                g2d.drawLine(x1, y1, x2, y2);
+            }
         }
+
+        // Reset alpha composite to fully opaque
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
     }
 
     private void drawCharacter(Graphics2D g2d) {
@@ -248,19 +272,6 @@ public class AnimationPanel extends JPanel {
 
         // Reset alpha composite to fully opaque
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-    }
-
-    private void drawStar(Graphics2D g2d, int x, int y, int radius) {
-        int xCenter = x - radius;
-        int yCenter = y - radius;
-
-        for (int i = 0; i < 8; i++) {
-            int x1 = xCenter + (int) (radius * Math.cos(i * Math.PI / 4));
-            int y1 = yCenter + (int) (radius * Math.sin(i * Math.PI / 4));
-            int x2 = xCenter + (int) (radius * Math.cos((i + 1) * Math.PI / 4));
-            int y2 = yCenter + (int) (radius * Math.sin((i + 1) * Math.PI / 4));
-            g2d.drawLine(x1, y1, x2, y2);
-        }
     }
 
     /**
