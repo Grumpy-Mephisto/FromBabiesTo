@@ -163,7 +163,7 @@ public class AnimationPanel extends JPanel {
     private void drawSun(Graphics2D g2d) {
         int centerX = CANVAS_WIDTH / 2;
         int centerY = CANVAS_HEIGHT / 2;
-        int sunRadius = 50;
+        int sunRadius = 50 + (characterAge / 5);
 
         // Gradient
         RadialGradientPaint sunGradient =
@@ -212,9 +212,13 @@ public class AnimationPanel extends JPanel {
         g2d.setColor(Colors.FOREST_GREEN);
 
         Path2D.Double continent1 = new Path2D.Double();
-        continent1.moveTo(centerX - 15 * scale, centerY - 5 * scale);
-        continent1.curveTo(centerX - 20 * scale, centerY - 30 * scale, centerX - 5 * scale,
-                centerY - 20 * scale, centerX - 10 * scale, centerY - 5 * scale);
+        continent1.moveTo(centerX - 15 * (scale * 2), centerY - 5 * (scale * 2));
+        continent1.curveTo(centerX - 20 * (scale * 2), centerY - 30 * (scale * 2),
+                centerX - 5 * (scale * 2), centerY - 20 * (scale * 2), centerX - 10 * (scale * 2),
+                centerY - 5 * (scale * 2));
+        continent1.curveTo(centerX - 10 * (scale * 2), centerY - 5 * (scale * 2),
+                centerX - 10 * (scale * 2), centerY - 5 * (scale * 2), centerX - 15 * (scale * 2),
+                centerY - 5 * (scale * 2));
         continent1.closePath();
         g2d.fill(continent1);
 
