@@ -24,6 +24,8 @@ public class AnimationPanel extends JPanel {
 
     private int characterSpeed = 1;
 
+    private double sunPulseAngle = 0; // Sun pulsation angle
+
     public AnimationPanel() {
         initializeCanvas();
         initializeTimer();
@@ -161,16 +163,34 @@ public class AnimationPanel extends JPanel {
     }
 
     private void drawSun(Graphics2D g2d) {
-        int centerX = CANVAS_WIDTH / 2;
-        int centerY = CANVAS_HEIGHT / 2;
-        int sunRadius = 50 + (characterAge / 5);
+        int centerX = CANVAS_WIDTH / 4; // Position of the sun in the canvas
+        int centerY = CANVAS_HEIGHT / 4;
+        int sunRadius = 70; // Static size or base radius of the sun
 
-        // Gradient
+        // Update the pulsating effect
+        sunPulseAngle += 0.05; // Adjust the speed of the pulsation
+        double sunPulse = Math.sin(sunPulseAngle) * 5; // Adjust the strength of the pulsation
+
+        // Create a radial gradient with a pulsating effect
         RadialGradientPaint sunGradient =
-                new RadialGradientPaint(centerX, centerY, sunRadius, new float[] {0.0f, 0.5f, 1.0f},
+                new RadialGradientPaint(new Point2D.Double(centerX, centerY),
+                        (float) (sunRadius + sunPulse), new float[] {0.0f, 0.8f, 1.0f},
                         new Color[] {Colors.SUN_YELLOW, Colors.SUN_ORANGE, Colors.SUN_RED});
+
+        // Apply the gradient paint
         g2d.setPaint(sunGradient);
-        g2d.fillOval(centerX - sunRadius, centerY - sunRadius, sunRadius * 2, sunRadius * 2);
+
+        // Draw the sun with the pulsating effect
+        drawMidpointEllipse(g2d, centerX, centerY, (int) (sunRadius + sunPulse),
+                (int) (sunRadius + sunPulse), true);
+
+        // Draw the sun's flare
+        g2d.setColor(new Color(255, 255, 255, 32)); // Semi-transparent white
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+        g2d.fillOval(centerX - sunRadius / 2, centerY - sunRadius / 2, sunRadius, sunRadius);
+
+        // Reset alpha composite to fully opaque
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
     }
 
     private void drawEarth(Graphics2D g2d) {
