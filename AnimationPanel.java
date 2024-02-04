@@ -24,6 +24,7 @@ public class AnimationPanel extends JPanel {
     private double earthRotationAngle = 0; // Earth rotation angle
 
     // Earth
+    boolean isExploding = false;
     private int characterSpeed = 1;
 
     // Sun
@@ -70,17 +71,35 @@ public class AnimationPanel extends JPanel {
 
     private void drawScene() {
         drawBackground(bufferGraphics);
-        drawCharacter(bufferGraphics);
+        if (isExploding) {
+            drawExplosion(bufferGraphics, characterPosition.x, characterPosition.y);
+        } else {
+            drawCharacter(bufferGraphics);
+        }
     }
 
     private void updateCharacter() {
-        characterAge = (characterAge + 1) % MAX_AGE;
+        if (!isExploding) {
+            characterAge++;
+            if (characterAge >= MAX_AGE) {
+                isExploding = true;
+                characterAge = MAX_AGE;
+            }
+        } else {
+            characterAge--;
+            if (characterAge <= 0) {
+                isExploding = false;
+                characterAge = 0;
+                characterPosition = new Point(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+            }
+        }
 
-        updatePosition();
-        earthRotationAngle += 0.5; // Increment the Earth's rotation angle
+        if (!isExploding) {
+            updatePosition();
+            earthRotationAngle += 0.5;
+        }
 
         clearBuffer();
-
         drawScene();
     }
 
@@ -153,24 +172,20 @@ public class AnimationPanel extends JPanel {
     }
 
     private void drawSun(Graphics2D g2d) {
-        int centerX = CANVAS_WIDTH / 4; // Position of the sun in the canvas
+        int centerX = CANVAS_WIDTH / 4;
         int centerY = CANVAS_HEIGHT / 4;
-        int sunRadius = 70; // Static size or base radius of the sun
+        int sunRadius = 100;
 
-        // Update the pulsating effect
         sunPulseAngle += 0.05; // Adjust the speed of the pulsation
         double sunPulse = Math.sin(sunPulseAngle) * 5; // Adjust the strength of the pulsation
 
-        // Create a radial gradient with a pulsating effect
         RadialGradientPaint sunGradient =
                 new RadialGradientPaint(new Point2D.Double(centerX, centerY),
                         (float) (sunRadius + sunPulse), new float[] {0.0f, 0.8f, 1.0f},
                         new Color[] {Colors.SUN_YELLOW, Colors.SUN_ORANGE, Colors.SUN_RED});
 
-        // Apply the gradient paint
         g2d.setPaint(sunGradient);
 
-        // Draw the sun with the pulsating effect
         drawMidpointEllipse(g2d, centerX, centerY, (int) (sunRadius + sunPulse),
                 (int) (sunRadius + sunPulse), true);
 
@@ -237,6 +252,27 @@ public class AnimationPanel extends JPanel {
         // Reset the clipping area
         g2d.setClip(null);
     }
+
+    private void drawExplosion(Graphics2D g2d, int xCenter, int yCenter) {
+        int numberOfParticles = 50;
+        int maxRadius = 100;
+
+        for (int i = 0; i < numberOfParticles; i++) {
+            Color particleColor = new Color((int) (Math.random() * 256),
+                    (int) (Math.random() * 256), (int) (Math.random() * 256), 150); // Semi-transparent
+
+            int particleSize = (int) (Math.random() * 15 + 5); // Random size between 5 and 20
+            double angle = Math.random() * 2 * Math.PI; // Random direction
+            int distance = (int) (Math.random() * maxRadius); // Random distance from the center
+
+            int particleX = xCenter + (int) (distance * Math.cos(angle)) - particleSize / 2;
+            int particleY = yCenter + (int) (distance * Math.sin(angle)) - particleSize / 2;
+
+            g2d.setColor(particleColor);
+            g2d.fillOval(particleX, particleY, particleSize, particleSize);
+        }
+    }
+
 
     private void applyShadow(Graphics2D g2d, int earthRadius, double lightAngle) {
         // Calculate the shadow angle
