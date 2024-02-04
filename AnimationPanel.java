@@ -178,34 +178,62 @@ public class AnimationPanel extends JPanel {
         int centerY = characterPosition.y;
         int earthRadius = 40 + (characterAge / 5);
 
-        // Draw the blue ocean
-        g2d.setColor(Colors.OCEAN_BLUE);
-        drawMidpointCircle(g2d, centerX, centerY, earthRadius, true);
+        // Light source direction
+        double lightAngle = Math.toRadians(earthRotationAngle + 45); // Adjust the angle as needed
 
-        // Set clipping area for the continents
-        Shape clip = g2d.getClip(); // Save the current clipping area
-        g2d.setClip(new Ellipse2D.Double(centerX - earthRadius, centerY - earthRadius,
-                earthRadius * 2, earthRadius * 2));
+        // Create an off-screen image
+        BufferedImage earthImage =
+                new BufferedImage(earthRadius * 2, earthRadius * 2, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D earthG2d = earthImage.createGraphics();
+        earthG2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Draw the base blue ocean
+        earthG2d.setColor(Colors.OCEAN_BLUE);
+        drawMidpointCircle(earthG2d, earthRadius, earthRadius, earthRadius, true);
+
+        // Set clipping area for the continents and atmospheric effects on the off-screen image
+        earthG2d.setClip(new Ellipse2D.Double(0, 0, earthRadius * 2, earthRadius * 2));
+
+        // Draw Continents
+        drawContinents(earthG2d, earthRadius, earthRadius, earthRadius);
+
+        // Apply a shadow
+        applyShadow(earthG2d, earthRadius, lightAngle);
+
+        // Draw the Atmosphere
+        drawAtmosphere(earthG2d, earthRadius, earthRadius, earthRadius);
+
+        // Dispose off-screen image graphics context
+        earthG2d.dispose();
 
         // Rotate the Earth
         AffineTransform oldTransform = g2d.getTransform();
         g2d.rotate(Math.toRadians(earthRotationAngle), centerX, centerY);
 
-        // Draw Continents
-        drawContinents(g2d, centerX, centerY, earthRadius);
+        // Draw the off-screen image of the Earth
+        g2d.drawImage(earthImage, centerX - earthRadius, centerY - earthRadius, null);
 
-        // Draw Atmosphere
-        drawAtmosphere(g2d, centerX, centerY, earthRadius);
-
-        // Reset the transform for clouds so that they don't rotate with the Earth
+        // Reset the transform for other drawings
         g2d.setTransform(oldTransform);
 
         // Draw Clouds
         drawClouds(g2d, centerX, centerY, earthRadius);
+    }
 
-        // Restore original settings
-        g2d.setTransform(oldTransform);
-        g2d.setClip(clip);
+    private void applyShadow(Graphics2D g2d, int earthRadius, double lightAngle) {
+        // Calculate the shadow angle
+        double shadowAngle = lightAngle + Math.PI;
+
+        // Create a gradient paint that simulates a shadow for depth
+        float[] dist = {0.0f, 1.0f};
+        Point2D center = new Point2D.Double(earthRadius + earthRadius * Math.cos(shadowAngle),
+                earthRadius + earthRadius * Math.sin(shadowAngle));
+        Color[] colors = {new Color(0, 0, 0, 100), new Color(0, 0, 0, 0)};
+        RadialGradientPaint p = new RadialGradientPaint(center, earthRadius, dist, colors);
+
+        g2d.setPaint(p);
+        g2d.fillOval(0, 0, earthRadius * 2, earthRadius * 2);
     }
 
     private void drawContinents(Graphics2D g2d, int centerX, int centerY, int earthRadius) {
