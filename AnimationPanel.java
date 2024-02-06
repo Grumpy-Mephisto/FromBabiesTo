@@ -8,13 +8,14 @@ import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
 
-public class AnimationPanel extends JPanel {
+public class AnimationPanel extends JPanel implements Runnable {
     private static final int CANVAS_WIDTH = 600;
     private static final int CANVAS_HEIGHT = 600;
-    private static final int TIMER_DELAY = 100;
+    private static final int FRAME_DELAY = 100;
     private static final int MAX_AGE = 100;
 
-    private Timer timer;
+    private Thread animator;
+    private boolean running = false;
     private BufferedImage buffer;
     private Graphics2D bufferGraphics;
     private int characterAge = 0;
@@ -32,8 +33,8 @@ public class AnimationPanel extends JPanel {
 
     public AnimationPanel() {
         initializeCanvas();
-        initializeTimer();
         initializeClouds();
+        startAnimation();
     }
 
     private void initializeCanvas() {
@@ -47,19 +48,40 @@ public class AnimationPanel extends JPanel {
         characterVelocity = new Point(characterSpeed, characterSpeed); // Initial velocity
     }
 
-    private void initializeTimer() {
-        timer = new Timer(TIMER_DELAY, e -> {
-            updateCharacter();
-            repaint();
-        });
-        timer.start();
-    }
-
     private void initializeClouds() {
         clouds = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             clouds.add(new Point((int) (Math.random() * CANVAS_WIDTH),
                     (int) (Math.random() * CANVAS_HEIGHT)));
+        }
+    }
+
+    private void startAnimation() {
+        running = true;
+        animator = new Thread(this);
+        animator.start();
+    }
+
+    public void stopAnimation() {
+        running = false;
+        try {
+            animator.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void run() {
+        while (running) {
+            updateCharacter();
+            repaint();
+
+            try {
+                Thread.sleep(FRAME_DELAY);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
